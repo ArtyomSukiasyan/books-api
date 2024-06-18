@@ -1,14 +1,9 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { IExtendedRequest } from "../models/interfaces/extenderRequest";
 
 interface IDecodedToken {
   user: {
-    id: string;
-  };
-}
-
-interface IExtendedRequest extends Request {
-  user?: {
     id: string;
   };
 }
