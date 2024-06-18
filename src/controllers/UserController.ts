@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User";
 import { IExtendedRequest } from "../models/interfaces/extenderRequest";
+import passwordService from "../services/password.service";
 
 export async function createUser(req: Request, res: Response) {
   const { username, password, email } = req.body;
@@ -12,7 +12,7 @@ export async function createUser(req: Request, res: Response) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, process.env.HASH_SALT);
+    const hashedPassword = await passwordService.hash(password);
     user = new User({ username, password: hashedPassword, email });
 
     const newUser = await user.save();
@@ -31,7 +31,7 @@ export async function loginUser(req: Request, res: Response) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await passwordService.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
