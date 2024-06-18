@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 
 async function hash(password: string) {
-  return bcrypt.hash(password, process.env.HASH_SALT);
+  return bcrypt.hash(password, Number(process.env.HASH_SALT));
 }
 
 async function compare(password: string, hash: string) {
