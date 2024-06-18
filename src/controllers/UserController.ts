@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import User from "../models/User";
 import { IExtendedRequest } from "../models/interfaces/extenderRequest";
 import passwordService from "../services/password.service";
+import jwtService from "../services/jwt.service";
 
 export async function createUser(req: Request, res: Response) {
   const { username, password, email } = req.body;
@@ -37,18 +37,9 @@ export async function loginUser(req: Request, res: Response) {
     }
 
     const payload = { user: { id: user.id } };
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN },
-      (err, token) => {
-        if (err) {
-          throw err;
-        }
+    const token = jwtService.generateToken(payload);
 
-        return res.json({ token });
-      }
-    );
+    return res.json({ token });
   } catch (err) {
     return res.status(500).send("Server Error");
   }
