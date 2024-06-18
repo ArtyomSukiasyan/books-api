@@ -12,7 +12,7 @@ export async function createUser(req: Request, res: Response) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, process.env.HASH_SALT);
     user = new User({ username, password: hashedPassword, email });
 
     const newUser = await user.save();
@@ -40,7 +40,7 @@ export async function loginUser(req: Request, res: Response) {
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
-      { expiresIn: 3600 },
+      { expiresIn: process.env.JWT_EXPIRES_IN },
       (err, token) => {
         if (err) {
           throw err;

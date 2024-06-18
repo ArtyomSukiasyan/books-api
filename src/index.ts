@@ -2,6 +2,8 @@ import express from "express";
 import connectDB from "./config/db";
 import usersRoutes from "./routes/users";
 import booksRoutes from "./routes/books";
+import { configDotenv } from "dotenv";
+configDotenv()
 
 const app = express();
 connectDB();
