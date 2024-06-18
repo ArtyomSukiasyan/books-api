@@ -11,11 +11,13 @@ export async function createUser(req: Request, res: Response) {
     if (user) {
       return res.status(400).json({ msg: "User already exists" });
     }
-    new User({ username, password, email });
-    const newUser = await user.save();
-    delete newUser.password;
 
-    return res.json(user);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user = new User({ username, password: hashedPassword, email });
+
+    const newUser = await user.save();
+
+    return res.json(newUser);
   } catch (err) {
     return res.status(500).send("Server Error");
   }
@@ -35,13 +37,18 @@ export async function loginUser(req: Request, res: Response) {
     }
 
     const payload = { user: { id: user.id } };
-    jwt.sign(payload, "secret", { expiresIn: 3600 }, (err, token) => {
-      if (err) {
-        throw err;
-      }
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: 3600 },
+      (err, token) => {
+        if (err) {
+          throw err;
+        }
 
-      return res.json({ token });
-    });
+        return res.json({ token });
+      }
+    );
   } catch (err) {
     return res.status(500).send("Server Error");
   }
