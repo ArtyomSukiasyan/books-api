@@ -6,6 +6,7 @@ interface IUser extends Document {
   password: string;
   email: string;
   role: number;
+  mailConfirmationId: string;
 }
 
 const UserSchema: Schema = new Schema({
@@ -13,13 +14,14 @@ const UserSchema: Schema = new Schema({
   password: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   role: { type: Number, default: 0 },
+  mailConfirmationId: { type: String },
 });
 
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-  
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
