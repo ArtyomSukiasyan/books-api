@@ -7,13 +7,14 @@ import {
   getBooks,
   updateBookById,
 } from "../controllers/BookController";
+import { admin } from "../middlewares/roles";
 
 const router = express.Router();
 
-router.post("/", auth, createBook);
+router.post("/", auth, admin, createBook);
 router.get("/", getBooks);
 router.get("/:id", getBookById);
-router.put("/:id", auth, updateBookById);
-router.delete("/:id", auth, deleteBookById);
+router.put("/:id", auth, admin, updateBookById);
+router.delete("/:id", auth, admin, deleteBookById);
 
 export default router;
