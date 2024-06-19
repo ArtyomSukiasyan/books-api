@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { errorMessages } from "../constants/errorMessages";
 import { IExtendedRequest } from "../models/interfaces/extenderRequest";
+import crypto from "crypto";
 import User from "../models/User";
 
 function generateId() {
-  const bigNumberToGenerateRandom = 1000000000000000;
-
-  return Math.round(Math.random() * bigNumberToGenerateRandom);
+  return crypto.randomBytes(16).toString("hex");
 }
 
 export async function getMe(req: IExtendedRequest, res: Response) {

@@ -1,5 +1,5 @@
 export const mailValues = {
-  confirmation(mailConfirmationId: number, email: string) {
+  confirmation(mailConfirmationId: string, email: string) {
     return {
       from: `Mail confirmation at Book API <${process.env.EMAIL_URL}>`,
       subject: "Confirm Your Email Address",
