@@ -24,8 +24,9 @@ async function sendMail(props: ISendEmail) {
   try {
     await transporter.sendMail(props);
     return true;
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
+
     throw new Error();
   }
 }

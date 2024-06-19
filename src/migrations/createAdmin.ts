@@ -28,7 +28,7 @@ const createAdmin = async () => {
       console.log("Admin user already exists");
     }
   } catch (err) {
-    console.error(err.message);
+    console.error(err);
   }
 };
 

@@ -4,12 +4,14 @@ import Book from "../models/Book";
 async function createBook(req: Request, res: Response) {
   try {
     const { title, author, publicationDate, genres } = req.body;
-    
+
     const newBook = new Book({ title, author, publicationDate, genres });
     const book = await newBook.save();
 
     return res.json(book);
   } catch (err) {
+    console.log(err);
+
     return res.status(500).send("Server Error");
   }
 }
@@ -20,6 +22,8 @@ async function getBooks(req: Request, res: Response) {
 
     return res.json(books);
   } catch (err) {
+    console.log(err);
+
     return res.status(500).send("Server Error");
   }
 }
@@ -33,6 +37,8 @@ async function getBookById(req: Request, res: Response) {
 
     return res.json(book);
   } catch (err) {
+    console.log(err);
+
     return res.status(500).send("Server Error");
   }
 }
@@ -52,6 +58,8 @@ async function updateBookById(req: Request, res: Response) {
 
     return res.json(book);
   } catch (err) {
+    console.log(err);
+
     return res.status(500).send("Server Error");
   }
 }
@@ -66,6 +74,8 @@ async function deleteBookById(req: Request, res: Response) {
 
     return res.json({ msg: "Book removed" });
   } catch (err) {
+    console.log(err);
+
     return res.status(500).send("Server Error");
   }
 }
