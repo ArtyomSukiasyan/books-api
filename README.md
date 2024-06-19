@@ -22,6 +22,9 @@ Application uses port 5000 by default
 
 Mongo admin uses port 8081 by default
 
+## Creating admin
+By default at first run application will create user with `admin` role. Credentials is in **.env.example** fle
+
 ## Project API Documentation
 
 ### 1. Adding a Book
