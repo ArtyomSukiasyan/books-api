@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   mongo:
     image: mongo:latest
@@ -15,9 +15,9 @@ services:
     image: mongo-express
     restart: unless-stopped
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://mongodb:27017/books
-      - ME_CONFIG_BASICAUTH_USERNAME=secret
-      - ME_CONFIG_BASICAUTH_PASSWORD=secret
+      - ME_CONFIG_MONGODB_URL=${ME_CONFIG_MONGODB_URL}
+      - ME_CONFIG_BASICAUTH_USERNAME=${ME_CONFIG_BASICAUTH_USERNAME}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${ME_CONFIG_BASICAUTH_PASSWORD}
     networks:
       - dev-network
     ports:
