@@ -4,15 +4,17 @@ import { IExtendedRequest } from "../models/interfaces/extenderRequest";
 import passwordService from "../services/password.service";
 import jwtService from "../services/jwt.service";
 import mailService from "../services/mail.service";
+import { mailValues } from "../constants/mailValues";
+import { errorMessages } from "../constants/errorMessages";
 
-const bigNumberToGenerateRandom = 10000000000000000;
+const bigNumberToGenerateRandom = 1000000000000000;
 
 export async function createUser(req: Request, res: Response) {
   const { username, password, email } = req.body;
   try {
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ msg: "User already exists" });
+      return res.status(400).json({ msg: errorMessages.userExist });
     }
 
     const hashedPassword = await passwordService.hash(password);
@@ -28,24 +30,9 @@ export async function createUser(req: Request, res: Response) {
       mailConfirmationId,
     });
 
-    await mailService.sendMail({
-      from: `Mail confirmation at Book API <${process.env.EMAIL_URL}>`,
-      subject: "Confirm Your Email Address",
-      text: `${process.env.MAIN_URL}/confirm-email/${mailConfirmationId}`,
-      html: `<a
-      href="${process.env.MAIN_URL}/confirm-email/${mailConfirmationId}"
-      style="
-        background-color: #4672e7;
-        padding: 8px 16px;
-        border-radius: 8px;
-        text-decoration: none;
-        color: #ffffff;
-      "
-      >Confirm email</a
-    >`,
-
-      to: user.email,
-    });
+    await mailService.sendMail(
+      mailValues.confirmation(mailConfirmationId, user.email)
+    );
 
     const newUser = await user.save();
 
@@ -53,7 +40,7 @@ export async function createUser(req: Request, res: Response) {
   } catch (err) {
     console.log(err);
 
-    return res.status(500).send("Server Error");
+    return res.status(500).send(errorMessages.serverError);
   }
 }
 
@@ -62,16 +49,16 @@ export async function loginUser(req: Request, res: Response) {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ msg: errorMessages.invalidCredentials });
     }
 
     const isMatch = await passwordService.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ msg: errorMessages.invalidCredentials });
     }
 
     if (user.mailConfirmationId) {
-      return res.status(400).json({ msg: "Email not confirmed" });
+      return res.status(400).json({ msg: errorMessages.emailNotConfirmed });
     }
 
     const payload = { user: { id: user.id } };
@@ -79,7 +66,7 @@ export async function loginUser(req: Request, res: Response) {
 
     return res.json({ token });
   } catch (err) {
-    return res.status(500).send("Server Error");
+    return res.status(500).send(errorMessages.serverError);
   }
 }
 
@@ -89,7 +76,7 @@ export async function getMe(req: IExtendedRequest, res: Response) {
 
     return res.json(user);
   } catch (err) {
-    return res.status(500).send("Server Error");
+    return res.status(500).send(errorMessages.serverError);
   }
 }
 
@@ -98,14 +85,14 @@ export async function updateRole(req: Request, res: Response) {
   try {
     let user = await User.findById(req.params.id);
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ msg: errorMessages.notFound("User") });
     }
     user.role = role;
     await user.save();
 
     return res.json(user);
   } catch (err) {
-    return res.status(500).send("Server Error");
+    return res.status(500).send(errorMessages.serverError);
   }
 }
 
@@ -114,10 +101,8 @@ export async function confirmEmail(req: Request, res: Response) {
 
   const user = await User.findOne({ mailConfirmationId });
 
-  const errors: { [key: string]: string } = {};
-
   if (!user) {
-    return res.status(400).send({ error: "User not found" });
+    return res.status(400).send({ error: errorMessages.notFound("User") });
   }
 
   await User.updateOne(
@@ -129,5 +114,5 @@ export async function confirmEmail(req: Request, res: Response) {
     }
   );
 
-  return res.status(200).send({ message: "Email confirmed successfully" });
+  return res.status(200).send({ msg: errorMessages.emailConfirmed });
 }
