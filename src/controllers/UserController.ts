@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import User from "../models/User";
 import { IExtendedRequest } from "../models/interfaces/extenderRequest";
 import passwordService from "../services/password.service";
 import jwtService from "../services/jwt.service";
@@ -11,7 +10,7 @@ import userService from "../services/user.service";
 export async function createUser(req: Request, res: Response) {
   const { username, password, email } = req.body;
   try {
-    let user = await User.findOne({ email });
+    let user = await userService.getUserByParams({ email });
     if (user) {
       return res.status(400).json({ msg: errorMessages.userExist });
     }
@@ -20,18 +19,16 @@ export async function createUser(req: Request, res: Response) {
 
     const mailConfirmationId = userService.generateId();
 
-    user = new User({
+    await mailService.sendMail(
+      mailValues.confirmation(mailConfirmationId, user.email)
+    );
+
+    const newUser = await userService.createUser({
       username,
       password: hashedPassword,
       email,
       mailConfirmationId,
     });
-
-    await mailService.sendMail(
-      mailValues.confirmation(mailConfirmationId, user.email)
-    );
-
-    const newUser = await user.save();
 
     return res.json(newUser);
   } catch (err) {
@@ -44,7 +41,7 @@ export async function createUser(req: Request, res: Response) {
 export async function loginUser(req: Request, res: Response) {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ username });
+    const user = await userService.getUserByParams({ username });
     if (!user) {
       return res.status(400).json({ msg: errorMessages.invalidCredentials });
     }
@@ -74,7 +71,7 @@ export async function getMe(req: IExtendedRequest, res: Response) {
 export async function updateRole(req: Request, res: Response) {
   const { role } = req.body;
   try {
-    let user = await User.findById(req.params.id);
+    const user = await userService.getUserByParams({ id: req.params.id });
     if (!user) {
       return res.status(404).json({ msg: errorMessages.notFound("User") });
     }
@@ -90,20 +87,17 @@ export async function updateRole(req: Request, res: Response) {
 export async function confirmEmail(req: Request, res: Response) {
   const { mailConfirmationId } = req.params;
 
-  const user = await User.findOne({ mailConfirmationId });
-
+  const user = await userService.getUserByParams({ mailConfirmationId });
   if (!user) {
     return res.status(400).send({ error: errorMessages.notFound("User") });
   }
 
-  await User.updateOne(
-    { email: user.email },
-    {
-      $set: {
-        mailConfirmationId: null,
-      },
-    }
-  );
+  await userService.updateUserData({
+    email: user.email,
+    params: {
+      mailConfirmationId: null,
+    },
+  });
 
   return res.status(200).send({ msg: errorMessages.emailConfirmed });
 }
