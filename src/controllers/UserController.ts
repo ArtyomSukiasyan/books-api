@@ -6,8 +6,7 @@ import jwtService from "../services/jwt.service";
 import mailService from "../services/mail.service";
 import { mailValues } from "../constants/mailValues";
 import { errorMessages } from "../constants/errorMessages";
-
-const bigNumberToGenerateRandom = 1000000000000000;
+import userService from "../services/user.service";
 
 export async function createUser(req: Request, res: Response) {
   const { username, password, email } = req.body;
@@ -19,9 +18,7 @@ export async function createUser(req: Request, res: Response) {
 
     const hashedPassword = await passwordService.hash(password);
 
-    const mailConfirmationId = Math.round(
-      Math.random() * bigNumberToGenerateRandom
-    );
+    const mailConfirmationId = userService.generateId();
 
     user = new User({
       username,
@@ -71,13 +68,7 @@ export async function loginUser(req: Request, res: Response) {
 }
 
 export async function getMe(req: IExtendedRequest, res: Response) {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-
-    return res.json(user);
-  } catch (err) {
-    return res.status(500).send(errorMessages.serverError);
-  }
+  return userService.getMe(req, res);
 }
 
 export async function updateRole(req: Request, res: Response) {
